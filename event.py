@@ -1,7 +1,9 @@
 # Esta classe representa um evento
 # type: tipo do evento de um job
 # tipos:
-# 
+# Chegada de job, Fim de job
+# Requisição de memória, liberaçào de memória
+# Encerramento
 #
 # duration: duração do evento
 # elapsed: tempo decorrido de execução
