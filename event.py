@@ -7,21 +7,25 @@
 #
 # duration: duração do evento
 # elapsed: tempo decorrido de execução
+# value: se for evento de alocação de memória, esse é o valor alocado
 
 class Event:
-    type = ""
+    eventType = ""
     duration = 0
     elapsed = 0
+    value = 0
+
 
     # Inicializa o evento
-    def __init__(self, type, duration):
-        self.type = type
+    def __init__(self, eventType, duration, value):
+        self.eventType = eventType
         self.duration = duration
         self.elapsed = 0
+        self.value = value
     
     # Realiza uma iteração de relógio no evento
     def iterate(self):
-        self.elapsed -= 1
+        self.elapsed += 1
     
     # Verifica se o evento acabou
     def isOver(self):
