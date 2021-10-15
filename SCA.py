@@ -7,15 +7,17 @@ flagOver = False # Flag que indica fim de execução
 flagEndEvent = False # Flag que indica que o evento END foi pushed
 flagBusy = False # Flag verdadeira se o processador está ocupado
 
-N = 10000 # Tamanho da memória
+N = 100 # Tamanho da memória
 memory = [None]*N # Memória física
 
-job1 = Job("Job1", 77, 397, 1000) # Job 1
-job2 = Job("Job2", 373, 73, 1000) # Job 2
+job1 = Job("Job1", 77, 397, 90) # Job 1
+job2 = Job("Job2", 373, 73, 5) # Job 2
+job3 = Job("Job3", 77,  88, 2000) # Job 2
 
 jobs = [] # Lista de jobs
 jobs.append(job1)
 jobs.append(job2)
+#jobs.append(job3)
 
 eventsFIFO = []
 
@@ -35,7 +37,7 @@ while(flagOver == False):
         # Escolhe o job com menor tempo de inicialização
         min_job = jobs[0]
         for job in jobs:
-            if job.initTime < min_job.initTime:
+            if job.initTime <= min_job.initTime:
                 min_job = job
             if min_job.initTime == t:
                 jobs.remove(min_job)
@@ -59,6 +61,16 @@ while(flagOver == False):
     
     if len(eventsFIFO) > 0 and flagBusy == False: # Se a fila de eventos tiver algum evento e o processador não está ocupado
         curEvent = eventsFIFO.pop(0) # Dequeue de um evento da fila
+        if curEvent.eventType == "MALLOC": # Se for evento de alocação
+          startPosition = 0
+          for i in range(len(memory)): # Encontra espaço livre
+            if (memory[i] != None):
+              startPosition = i+1
+          for j in range(startPosition,curEvent.value + startPosition):
+            memory[j] = curEvent.job.name # Preenche memória
+        if curEvent.eventType == "MFREE": # Se for evento de liberação 
+          for j in range(startPosition,curEvent.value + firstFree):
+            memory[j] = None # Libera memória
         if curEvent.eventType == "END": # Se for evento de finalização
             print("Evento "+curEvent.__str__()+" terminado em t = "+str(t))
             flagOver = True # O processador deve finalizar atividades
@@ -69,7 +81,8 @@ while(flagOver == False):
     
     if flagBusy == True:
         if curEvent.isOver():
-            print("Evento "+curEvent.__str__()+" terminado em t = "+str(t))
+            #print("Evento "+curEvent.__str__()+" terminado em t = "+str(t))
+            print(memory)
             flagBusy = False
         else:
             t += 1
