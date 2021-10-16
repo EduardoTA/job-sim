@@ -12,12 +12,12 @@ memory = [None]*N # Memória física
 
 job1 = Job("Job1", 77, 397, 90) # Job 1
 job2 = Job("Job2", 373, 73, 5) # Job 2
-job3 = Job("Job3", 77,  88, 2000) # Job 2
+job3 = Job("Job3", 77,  88, 20) # Job 2
 
 jobs = [] # Lista de jobs
 jobs.append(job1)
 jobs.append(job2)
-#jobs.append(job3)
+jobs.append(job3)
 
 eventsFIFO = []
 
@@ -26,7 +26,7 @@ inicDuration = 0 # Duração do evento de inicialização de job
 mfreeDuration = 0 # Duração do evento de liberação de memória
 jentDuration = 0 # Duração de finalizaçao de job
 
-min_job = 0
+min_job = 0 # Job com menor tempo de inicialização
 
 curEvent = None # Evento que está atualmente sendo executado
 
