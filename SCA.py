@@ -62,15 +62,18 @@ while(flagOver == False):
     if len(eventsFIFO) > 0 and flagBusy == False: # Se a fila de eventos tiver algum evento e o processador não está ocupado
         curEvent = eventsFIFO.pop(0) # Dequeue de um evento da fila
         if curEvent.eventType == "MALLOC": # Se for evento de alocação
-          startPosition = 0
-          for i in range(len(memory)): # Encontra espaço livre
-            if (memory[i] != None):
-              startPosition = i+1
-          for j in range(startPosition,curEvent.value + startPosition):
-            memory[j] = curEvent.job.name # Preenche memória
+            startPosition = 0
+            for i in range(len(memory)): # Encontra espaço livre
+                if (memory[i] != None):
+                    startPosition = i+1
+            if (curEvent.value > len(memory)- startPosition):
+                print("Memória cheia! Abortando")
+                break # Provavelmente melhor fazer um pop, editar depois ################
+            for j in range(startPosition,curEvent.value + startPosition):
+                memory[j] = curEvent.job.name # Preenche memória
         if curEvent.eventType == "MFREE": # Se for evento de liberação 
-          for j in range(startPosition,curEvent.value + firstFree):
-            memory[j] = None # Libera memória
+            for j in range(startPosition,curEvent.value + startPosition):
+                memory[j] = None # Libera memória
         if curEvent.eventType == "END": # Se for evento de finalização
             print("Evento "+curEvent.__str__()+" terminado em t = "+str(t))
             flagOver = True # O processador deve finalizar atividades
@@ -81,8 +84,7 @@ while(flagOver == False):
     
     if flagBusy == True:
         if curEvent.isOver():
-            #print("Evento "+curEvent.__str__()+" terminado em t = "+str(t))
-            print(memory)
+            print("Evento "+curEvent.__str__()+" terminado em t = "+str(t))
             flagBusy = False
         else:
             t += 1
