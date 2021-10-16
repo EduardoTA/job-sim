@@ -121,44 +121,15 @@ while(flagOver == False):
                     jobExecFIFO[jobExecFIFOIndex].events[0].iterate()
                     t += 1
             else:
+                oldIndex = jobExecFIFOIndex # Gambiarra
                 if jobExecFIFOIndex == len(jobExecFIFO)-1:
                     jobExecFIFOIndex = 0
                 else:
                     jobExecFIFOIndex += 1
-                jobExecFIFO.pop(jobExecFIFOIndex)
+                jobExecFIFO.pop(oldIndex)
+                
     else:
         flagOver = True
-
-
-    # if len(jobExecFIFO) > 0 or len(jobFetchFIFO) > 0 or len(jobsFIFO) > 0:
-    #     if len(jobExecFIFO) > 0:
-    #         if len(jobExecFIFO[jobExecFIFOIndex].events) > 0:
-    #             # Tipo de evento sendo executado no momento
-    #             curEventType = jobExecFIFO[jobExecFIFOIndex].events[0].eventType
-
-    #             if curEventType == "MALLOC":
-    #                 if memory[emptyStart] == None:
-    #                     for i in range(emptyStart, jobExecFIFO[jobExecFIFOIndex].mem):
-    #                         memory[i] = jobExecFIFO[jobExecFIFOIndex].name
-    #                 else:
-    #                     pass
-    #             elif curEventType == "MFREE":
-    #                 emptyStart = memory.index(jobExecFIFO[jobExecFIFOIndex].name)
-    #                 if memory[emptyStart] != None:
-    #                     for i in range(emptyStart, jobExecFIFO[jobExecFIFOIndex].mem):
-    #                         memory[i] = None
-    #                 else:
-    #                     pass
-    #             if jobExecFIFO[jobExecFIFOIndex].events[0].isOver():
-    #                 jobExecFIFO[jobExecFIFOIndex].events.pop(0)
-    #             else:
-    #                 jobExecFIFO[jobExecFIFOIndex].events[0].iterate()
-    #         else:
-    #             if jobExecFIFOIndex == len(jobExecFIFO)-1:
-    #                 jobExecFIFOIndex = 0
-    #             else:
-    #                 jobExecFIFOIndex += 1
-    #             jobExecFIFO.pop(jobExecFIFOIndex)
 
 
 print('\njobsFIFO[]:')
@@ -175,3 +146,5 @@ for job in jobExecFIFO:
 
 print('\nMemória:')
 print(memory)
+
+print('Tempo de execução = '+str(t))
