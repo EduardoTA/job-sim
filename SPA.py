@@ -4,7 +4,7 @@ from job import Job
 def checkAllJobsExec(jobs):
     flag = True
     for job in jobs:
-        if job.events[0].eventType != "EXEC":
+        if len(job.events) == 0 or job.events[0].eventType != "EXEC":
             flag = False
     return flag
 
@@ -44,11 +44,11 @@ inicDuration = 0 # Duração do evento de inicialização de job
 mfreeDuration = 0 # Duração do evento de liberação de memória
 jentDuration = 0 # Duração de finalizaçao de job
 
-job1 = Job("Job1", 77, 397, 90) # Job 1
+job1 = Job("Job1", 0, 397, 20) # Job 1
 job1.spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration) # Cria os eventos do job
-job2 = Job("Job2", 373, 73, 5) # Job 2
+job2 = Job("Job2", 10, 73, 5) # Job 2
 job2.spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration) # Cria os eventos do job
-job3 = Job("Job3", 77,  88, 20) # Job 2
+job3 = Job("Job3", 20,  88, 20) # Job 2
 job3.spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration) # Cria os eventos do job
 
 jobsFIFO = [] # Fila de jobs que não estão sendo executados
@@ -58,9 +58,6 @@ jobsFIFO.append(job3)
 
 # Ordenar fila
 jobsFIFO.sort(key=lambda x: x.initTime)
-
-# Fila de eventos
-eventsFIFO = []
 
 curEvent = None # Evento que está atualmente sendo executado
 
@@ -74,14 +71,14 @@ jobExecFIFOIndex = 0 # Elemento da fila que está sendo executado no momento
 turnoverTime = 20 # Número de ciclos de clock para trocar de job
 
 # While que itera toda iteração de simulação
-while(flagOver == False and t<10001):
+while(flagOver == False and t<100):
     # Job fetcher
     if len(jobsFIFO) > 0:
         while(len(jobsFIFO) > 0 and jobsFIFO[0].initTime == t):
             jobFetchFIFO.append(jobsFIFO[0])
             jobsFIFO.pop(0)
 
-    #emptyStart = 0 # Posição de início de espaço vazio
+    emptyStart = 0 # Posição de início de espaço vazio
     # Job issuer
     if len(jobFetchFIFO) > 0 and len(jobExecFIFO) < multi:
         if len(jobExecFIFO) == 0:
@@ -90,36 +87,68 @@ while(flagOver == False and t<10001):
         else:
             if checkAllJobsExec(jobExecFIFO):
                 emptyStart = firstFit(jobFetchFIFO[0].mem, memory)
-                print(emptyStart)
                 if emptyStart > -1:
                     jobExecFIFO.append(jobFetchFIFO[0])
                     jobFetchFIFO.pop(0)
                 else:
                     pass
-
+    
     # Job scheduler
-    # if len(jobExecFIFO) > 0 and (flagBusy == False or t % multi == 0):
-    #     #if len(eventsFIFO) 
-    #     if len(jobExecFIFO) == 1:
-    #         flagBusy == True
+    if len(jobExecFIFO) > 0 and (flagBusy == False or t % multi == 0): 
+        # Index do job a ser executado no próximo turnover
+        if jobExecFIFOIndex == len(jobExecFIFO)-1:
+            jobExecFIFOIndex = 0
+        else:
+            jobExecFIFOIndex += 1
+    
+    # Event handler
+    if len(jobExecFIFO) > 0 or len(jobFetchFIFO) > 0 or len(jobsFIFO) > 0:
+        if len(jobExecFIFO) > 0:
+            if len(jobExecFIFO[jobExecFIFOIndex].events) > 0:
+                # Tipo de evento sendo executado no momento
+                curEventType = jobExecFIFO[jobExecFIFOIndex].events[0].eventType
+                if curEventType == "MALLOC":
+                    if memory[emptyStart] == None:
+                        for i in range(emptyStart, jobExecFIFO[jobExecFIFOIndex].mem):
+                            memory[i] = jobExecFIFO[jobExecFIFOIndex].name
+                    else:
+                        pass
+                    
+                if jobExecFIFO[jobExecFIFOIndex].events[0].isOver():
+                    jobExecFIFO[jobExecFIFOIndex].events.pop(0)
+    else:
+        flagOver = True
 
-    #         eventsFIFO = [] # Limpar fila de eventos
-    #         jobExecFIFO[0].spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration)
-    #         eventsFIFO += jobExecFIFO[0].events
-    #     else:
-    #         flagBusy == True
-    #         eventsFIFO = [] # Limpar fila de eventos
-    #         jobExecFIFO[jobExecFIFOIndex].spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration)
-    #         eventsFIFO += jobExecFIFO[jobExecFIFOIndex].events
 
-    #         # Index do job a ser executado no próximo turnover
-    #         if jobExecFIFOIndex == len(jobExecFIFO)-1:
-    #             jobExecFIFOIndex = 0
+    # if len(jobExecFIFO) > 0 or len(jobFetchFIFO) > 0 or len(jobsFIFO) > 0:
+    #     if len(jobExecFIFO) > 0:
+    #         if len(jobExecFIFO[jobExecFIFOIndex].events) > 0:
+    #             # Tipo de evento sendo executado no momento
+    #             curEventType = jobExecFIFO[jobExecFIFOIndex].events[0].eventType
+
+    #             if curEventType == "MALLOC":
+    #                 if memory[emptyStart] == None:
+    #                     for i in range(emptyStart, jobExecFIFO[jobExecFIFOIndex].mem):
+    #                         memory[i] = jobExecFIFO[jobExecFIFOIndex].name
+    #                 else:
+    #                     pass
+    #             elif curEventType == "MFREE":
+    #                 emptyStart = memory.index(jobExecFIFO[jobExecFIFOIndex].name)
+    #                 if memory[emptyStart] != None:
+    #                     for i in range(emptyStart, jobExecFIFO[jobExecFIFOIndex].mem):
+    #                         memory[i] = None
+    #                 else:
+    #                     pass
+    #             if jobExecFIFO[jobExecFIFOIndex].events[0].isOver():
+    #                 jobExecFIFO[jobExecFIFOIndex].events.pop(0)
+    #             else:
+    #                 jobExecFIFO[jobExecFIFOIndex].events[0].iterate()
     #         else:
-    #             jobExecFIFOIndex += 1
-
-            
-
+    #             if jobExecFIFOIndex == len(jobExecFIFO)-1:
+    #                 jobExecFIFOIndex = 0
+    #             else:
+    #                 jobExecFIFOIndex += 1
+    #             jobExecFIFO.pop(jobExecFIFOIndex)
 
     t += 1
 
@@ -133,8 +162,7 @@ for job in jobFetchFIFO:
 
 print('\njobExecFIFO[]:')
 for job in jobExecFIFO:   
-    print(job) 
+    print(job)
 
-print('\neventsFIFO[]:')
-for event in eventsFIFO:   
-    print(event)
+print('\nMemória:')
+print(memory)
