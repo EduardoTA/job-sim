@@ -71,7 +71,7 @@ jobExecFIFOIndex = 0 # Elemento da fila que está sendo executado no momento
 turnoverTime = 20 # Número de ciclos de clock para trocar de job
 
 # While que itera toda iteração de simulação
-while(flagOver == False and t<100):
+while(flagOver == False):
     # Job fetcher
     if len(jobsFIFO) > 0:
         while(len(jobsFIFO) > 0 and jobsFIFO[0].initTime == t):
@@ -108,14 +108,24 @@ while(flagOver == False and t<100):
                 # Tipo de evento sendo executado no momento
                 curEventType = jobExecFIFO[jobExecFIFOIndex].events[0].eventType
                 if curEventType == "MALLOC":
-                    if memory[emptyStart] == None:
-                        for i in range(emptyStart, jobExecFIFO[jobExecFIFOIndex].mem):
-                            memory[i] = jobExecFIFO[jobExecFIFOIndex].name
-                    else:
-                        pass
-                    
+                    emptyStart = memory.index(None) # Gambiarra
+                    for i in range(emptyStart, jobExecFIFO[jobExecFIFOIndex].mem+emptyStart):
+                        memory[i] = jobExecFIFO[jobExecFIFOIndex].name  
+                if curEventType == "MFREE":
+                    emptyStart = memory.index(jobExecFIFO[jobExecFIFOIndex].name)
+                    for i in range(emptyStart, jobExecFIFO[jobExecFIFOIndex].mem+emptyStart):
+                        memory[i] = None        
                 if jobExecFIFO[jobExecFIFOIndex].events[0].isOver():
                     jobExecFIFO[jobExecFIFOIndex].events.pop(0)
+                else:
+                    jobExecFIFO[jobExecFIFOIndex].events[0].iterate()
+                    t += 1
+            else:
+                if jobExecFIFOIndex == len(jobExecFIFO)-1:
+                    jobExecFIFOIndex = 0
+                else:
+                    jobExecFIFOIndex += 1
+                jobExecFIFO.pop(jobExecFIFOIndex)
     else:
         flagOver = True
 
@@ -150,7 +160,6 @@ while(flagOver == False and t<100):
     #                 jobExecFIFOIndex += 1
     #             jobExecFIFO.pop(jobExecFIFOIndex)
 
-    t += 1
 
 print('\njobsFIFO[]:')
 for job in jobsFIFO:   

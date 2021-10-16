@@ -23,7 +23,7 @@ class Job:
         self.events.append(event)
         event = Event("EXEC", self.duration, 0, self)
         self.events.append(event)
-        #event = Event("MFREE", mfreeDuration, 0, self)
+        event = Event("MFREE", mfreeDuration, 0, self)
         self.events.append(event)
         event = Event("JEND", jentDuration, 0, self)
         self.events.append(event)
