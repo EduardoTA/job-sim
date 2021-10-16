@@ -37,3 +37,4 @@ class Event:
     
     def __str__(self):
         return str("Job name: "+self.job.__str__()+", type: "+self.eventType+", duration: "+str(self.duration)+", elapsed: "+str(self.elapsed)+", value: "+str(self.value))
+

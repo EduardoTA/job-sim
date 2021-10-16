@@ -42,10 +42,10 @@ jobExecFIFOIndex = 0 # Elemento da fila que está sendo executado no momento
 turnoverTime = 20 # Número de ciclos de clock para trocar de job
 
 # While que itera toda iteração de simulação
-while(flagOver == False and t<100000):
+while(flagOver == False and t<100021):
     # Job fetcher
     if len(jobsFIFO) > 0:
-        while(jobsFIFO[0].initTime == t):
+        while(len(jobsFIFO) > 0 and jobsFIFO[0].initTime == t):
             jobFetchFIFO.append(jobsFIFO[0])
             jobsFIFO.pop(0)
 
@@ -55,11 +55,48 @@ while(flagOver == False and t<100000):
         jobFetchFIFO.pop(0)
     
     # Job scheduler
-    pass
+    if len(jobExecFIFO) > 0 and (flagBusy == False or t % multi == 0):
+        if len(jobExecFIFO) == 1:
+            flagBusy == True
 
-    
+            eventsFIFO = [] # Limpar fila de eventos
+            event = Event("INIC", inicDuration, 0, jobExecFIFO[0])
+            eventsFIFO.append(event)
+            event = Event("MALLOC", mallocDuration, jobExecFIFO[0].mem, jobExecFIFO[0])
+            eventsFIFO.append(event)
+            event = Event("EXEC", jobExecFIFO[0].duration, 0, jobExecFIFO[0])
+            eventsFIFO.append(event)
+            event = Event("MFREE", mfreeDuration, 0, jobExecFIFO[0])
+            eventsFIFO.append(event)
+            event = Event("JEND", jentDuration, 0, jobExecFIFO[0])
+            eventsFIFO.append(event)
+        else:
+            flagBusy == True
+            # Index do job a ser executado no próximo turnover
+            if jobExecFIFOIndex == len(jobExecFIFO)-1:
+                jobExecFIFOIndex = 0
+            else:
+                jobExecFIFOIndex += 1
+
+            eventsFIFO = [] # Limpar fila de eventos
+            event = Event("INIC", inicDuration, 0, jobExecFIFO[jobExecFIFOIndex])
+            eventsFIFO.append(event)
+            event = Event("MALLOC", mallocDuration, jobExecFIFO[jobExecFIFOIndex].mem, jobExecFIFO[jobExecFIFOIndex])
+            eventsFIFO.append(event)
+            event = Event("EXEC", jobExecFIFO[jobExecFIFOIndex].duration, 0, jobExecFIFO[jobExecFIFOIndex])
+            eventsFIFO.append(event)
+            event = Event("MFREE", mfreeDuration, 0, jobExecFIFO[jobExecFIFOIndex])
+            eventsFIFO.append(event)
+            event = Event("JEND", jentDuration, 0, jobExecFIFO[jobExecFIFOIndex])
+            eventsFIFO.append(event)
+
+
     t += 1
 
-# print('\njobSchedulerFIFO[]:')
-# for job in jobSchedulerFIFO:   
-#     print(job)
+print('\njobExecFIFO[]:')
+for job in jobExecFIFO:   
+    print(job) 
+
+print('\neventsFIFO[]:')
+for event in eventsFIFO:   
+    print(event)
