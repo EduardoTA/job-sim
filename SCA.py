@@ -20,8 +20,19 @@ def SCA(jobs):
     min_job = 0 # Job com menor tempo de inicialização
 
     curEvent = None # Evento que está atualmente sendo executado
+    
+    # Métricas
+    timeMemQueue = 0 # Tempo de espera em fila de espera
 
-    tExec = 0
+    memUsage = 0 # Taxa média de ocupação de memória atual
+    memUsageant = 0 # Taxa média de ocupação de memória anterior
+
+    memSucRate = 0 # Taxa média de atendimento às solicitações de alocação
+    memSucRateant = 0 # Taxa média de atendimento às solicitações de alocação anterior
+    nSucRate = 0 # Número de solicitações de alocação de memória
+
+    tExec = 0 # Tempo que o processador está em EXEC
+
 
     # Job handler
     for job in jobs:
@@ -57,3 +68,19 @@ def SCA(jobs):
                 jobs.pop(0)
         else:
             flagOver = True
+    
+    print('\njobs[]:')
+    for job in jobs:   
+        print(job) 
+
+    print('\nMemória:')
+    print(memory)
+
+    print('\n----#Métricas#----')
+    print(f'Tempo de espera em fila de memória = {timeMemQueue}')
+    print(f'Taxa de ocupação de memória = {memUsage}')
+    print(f'Taxa de atendimento às solicitações de alocação = {memSucRate}')
+    idle = 1-tExec/t
+    print(f'Taxa de ociosidade do processador = {idle}')
+    print(f'Tempo de execução = {t}')
+    print(f'Taxa de multiprogramação = 1')
