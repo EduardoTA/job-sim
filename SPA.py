@@ -1,5 +1,7 @@
 from event import Event
 from job import Job
+from memPlot import memPlot
+
 
 def SPA(jobsFIFO, N, multi):
     def checkAllJobsExec(jobs):

@@ -1,10 +1,14 @@
+from matplotlib.image import imsave
 from event import Event
 from job import Job
+from memPlot import memPlot
 import matplotlib.pyplot as plt
 
 
 # Implementação da Alocação Simples Contígua
-def SCA(jobs, N):
+def SCA(jobsInic, N):
+    jobs = jobsInic.copy()
+
     t = 0 # Tempo atual de simulação
     tant = 0
     flagOver = False # Flag que indica fim de execução
@@ -34,10 +38,16 @@ def SCA(jobs, N):
 
     tExec = 0 # Tempo que o processador está em EXEC
 
+    memoryAcc = []
+
     # Job handler
     for job in jobs:
         job.spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration) # Cria os eventos do job
-        
+
+    print('\njobs[]:')
+    for job in jobs:   
+        print(job) 
+    
     # While que itera toda iteração de simulação
     while(flagOver == False):
 
@@ -45,16 +55,19 @@ def SCA(jobs, N):
         # Event handler
         if len(jobs) > 0:
             if len(jobs[0].events) > 0:
+                if jobs[0].start > t:
+                    jobs[0].start = t
                 # Tipo de evento sendo executado no momento
                 curEventType = jobs[0].events[0].eventType
                 if curEventType == "MALLOC":
                     emptyStart = memory.index(0)
                     for i in range(emptyStart, jobs[0].mem+emptyStart):
-                        memory[i] = jobs[0].index  
+                        memory[i] = jobs[0].index
+                    print(memory)
                 if curEventType == "MFREE":
                     emptyStart = memory.index(jobs[0].index)
                     for i in range(emptyStart, jobs[0].mem+emptyStart):
-                        memory[i] = 0        
+                        memory[i] = 0
                 if jobs[0].events[0].isOver():
                     jobs[0].events.pop(0)
                 else:
@@ -64,6 +77,7 @@ def SCA(jobs, N):
                 if t != tant and jobs[0].events[0].eventType == "EXEC":
                     tExec += 1
             else:
+                jobs[0].end = t
                 jobs.pop(0)
         else:
             flagOver = True
@@ -72,10 +86,7 @@ def SCA(jobs, N):
             memUsageant = memUsage
             memUsage = memUsageant + ((sum(x is not None for x in memory)/len(memory)) - memUsageant)/t
 
-    
-    print('\njobs[]:')
-    for job in jobs:   
-        print(job) 
+            memoryAcc = memoryAcc+[memory.copy()]
 
     print('\nMemória:')
     print(memory)
@@ -89,4 +100,5 @@ def SCA(jobs, N):
     print(f'Tempo de execução = {t}')
     print(f'Taxa de multiprogramação = 1')
 
-    plt.imshow(memory)
+
+    memPlot(jobsInic, memoryAcc)

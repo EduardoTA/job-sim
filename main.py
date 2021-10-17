@@ -3,6 +3,11 @@ from SCA import SCA
 from SPA import SPA
 from event import Event
 from job import Job
+import matplotlib.pyplot as plt
+
+# plt.figure()
+# plt.matshow([[0, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 0, 0, 0], [0, 3, 0, 0, 0], [0, 0, 0, 0, 0]])
+# plt.show()
 
 def getJobMix(file):
     jobs = [] # Lista de jobs

@@ -1,3 +1,4 @@
+from numpy import inf
 from event import Event
 
 class Job:
@@ -7,6 +8,9 @@ class Job:
     mem = 0 # Memória alocada para o job
     events = [] # Eventos pendentes relacionados ao job
     index = 0
+
+    start = inf
+    end = 0
 
     # Inicializa o evento
     def __init__(self, index, name, initTime, duration, mem):
