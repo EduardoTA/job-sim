@@ -46,7 +46,7 @@ inicDuration = 0 # Duração do evento de inicialização de job
 mfreeDuration = 0 # Duração do evento de liberação de memória
 jentDuration = 0 # Duração de finalizaçao de job
 
-job1 = Job("Job1", 0, 20, 100) # Job 1
+job1 = Job("Job1", 0, 20, 90) # Job 1
 job1.spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration) # Cria os eventos do job
 job2 = Job("Job2", 0, 20, 5) # Job 2
 job2.spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration) # Cria os eventos do job
@@ -84,6 +84,9 @@ nSucRate = 0 # Número de solicitações de alocação de memória
 
 tExec = 0 # Tempo que o processador está em EXEC
 
+multitask = 0 # Taxa média de multiprogramação atual
+multitaskant = 0 # Taxa média de multiprogramação anterior
+
 # While que itera toda iteração de simulação
 while(flagOver == False):
     # Job fetcher
@@ -113,6 +116,11 @@ while(flagOver == False):
                     timeMemQueue += t-tant
             else:
                 timeMemQueue += t-tant
+
+    # Cálculo da taxa de multiprogramação (só leva em conta momentos em que existem jobs na memória)
+    if tant != t and len(jobExecFIFO) > 0:
+        multitaskant = multitask
+        multitask = multitaskant + (len(jobExecFIFO) - multitaskant)/t
 
     # Job scheduler
     if len(jobExecFIFO) > 0 and (flagBusy == False or t % multi == 0): 
@@ -147,7 +155,7 @@ while(flagOver == False):
                 if t != tant and jobExecFIFO[jobExecFIFOIndex].events[0].eventType == "EXEC":
                     tExec += 1
             else:
-                oldIndex = jobExecFIFOIndex # Gambiarra
+                oldIndex = jobExecFIFOIndex
                 if jobExecFIFOIndex == len(jobExecFIFO)-1:
                     jobExecFIFOIndex = 0
                 else:
@@ -185,3 +193,4 @@ print(f'Taxa de atendimento às solicitações de alocação = {memSucRate}')
 idle = 1-tExec/t
 print(f'Taxa de ociosidade do processador = {idle}')
 print(f'Tempo de execução = {t}')
+print(f'Taxa de multiprogramação = {multitask}')
