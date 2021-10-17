@@ -1,7 +1,7 @@
 from event import Event
 from job import Job
 
-def SPA(jobsFIFO):
+def SPA(jobsFIFO, N, multi):
     def checkAllJobsExec(jobs):
         flag = True
         for job in jobs:
@@ -37,7 +37,6 @@ def SPA(jobsFIFO):
 
     flagOver = False # Flag que indica fim de execução
 
-    N = 100 # Tamanho da memória
     memory = [None]*N # Memória física
 
     mallocDuration = 0 # Duração do evento de alocação de memória
@@ -45,22 +44,11 @@ def SPA(jobsFIFO):
     mfreeDuration = 0 # Duração do evento de liberação de memória
     jentDuration = 0 # Duração de finalizaçao de job
 
-    job1 = Job("Job1", 0, 20, 90) # Job 1
-    job1.spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration) # Cria os eventos do job
-    job2 = Job("Job2", 0, 20, 5) # Job 2
-    job2.spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration) # Cria os eventos do job
-    job3 = Job("Job3", 70,  20, 20) # Job 2
-    job3.spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration) # Cria os eventos do job
-
-    jobsFIFO = [] # Fila de jobs que não estão sendo executados
-    jobsFIFO.append(job1)
-    jobsFIFO.append(job2)
-    jobsFIFO.append(job3)
+    for job in jobsFIFO:
+        job.spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration) # Cria os eventos do job
 
     # Ordenar fila
     jobsFIFO.sort(key=lambda x: x.initTime)
-
-    multi = 2 # Grau máximo de multiprogramação
 
     jobFetchFIFO = [] # Fila com os jobs cujo tempo de início passou
 
@@ -75,8 +63,8 @@ def SPA(jobsFIFO):
     memUsage = 0 # Taxa média de ocupação de memória atual
     memUsageant = 0 # Taxa média de ocupação de memória anterior
 
-    memSucRate = 0 # Taxa média de atendimento às solicitações de alocação
-    memSucRateant = 0 # Taxa média de atendimento às solicitações de alocação anterior
+    memSucRate = 1 # Taxa média de atendimento às solicitações de alocação
+    memSucRateant = 1 # Taxa média de atendimento às solicitações de alocação anterior
     nSucRate = 0 # Número de solicitações de alocação de memória
 
     tExec = 0 # Tempo que o processador está em EXEC
@@ -120,7 +108,7 @@ def SPA(jobsFIFO):
             multitask = multitaskant + (len(jobExecFIFO) - multitaskant)/t
 
         # Job scheduler
-        if len(jobExecFIFO) > 0 and (t % multi == 0): 
+        if len(jobExecFIFO) > 0 and (t % turnoverTime == 0): 
             # Index do job a ser executado no próximo turnover
             if jobExecFIFOIndex >= len(jobExecFIFO)-1:
                 jobExecFIFOIndex = 0

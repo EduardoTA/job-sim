@@ -2,14 +2,13 @@ from event import Event
 from job import Job
 
 # Implementação da Alocação Simples Contígua
-def SCA(jobs):
+def SCA(jobs, N):
     t = 0 # Tempo atual de simulação
     tant = 0
     flagOver = False # Flag que indica fim de execução
     flagEndEvent = False # Flag que indica que o evento END foi pushed
     flagBusy = False # Flag verdadeira se o processador está ocupado
 
-    N = 100 # Tamanho da memória
     memory = [None]*N # Memória física
 
     mallocDuration = 0 # Duração do evento de alocação de memória
