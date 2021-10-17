@@ -78,6 +78,12 @@ timeMemQueue = 0 # Tempo de espera em fila de espera
 memUsage = 0 # Taxa média de ocupação de memória atual
 memUsageant = 0 # Taxa média de ocupação de memória anterior
 
+memSucRate = 0 # Taxa média de atendimento às solicitações de alocação
+memSucRateant = 0 # Taxa média de atendimento às solicitações de alocação anterior
+nSucRate = 0 # Número de solicitações de alocação de memória
+
+tExec = 0 # Tempo que o processador está em EXEC
+
 # While que itera toda iteração de simulação
 while(flagOver == False):
     # Job fetcher
@@ -87,6 +93,7 @@ while(flagOver == False):
             jobsFIFO.pop(0)
 
     emptyStart = 0 # Posição de início de espaço vazio
+
     # Job issuer
     if len(jobFetchFIFO) > 0 and len(jobExecFIFO) < multi:
         if len(jobExecFIFO) == 0:
@@ -99,12 +106,14 @@ while(flagOver == False):
                     jobExecFIFO.append(jobFetchFIFO[0])
                     jobFetchFIFO.pop(0)
                 else:
+                    nSucRate += 1
+                    memSucRateant = memSucRate
+                    memSucRate = memSucRateant + (1 - memSucRateant)/nSucRate
+
                     timeMemQueue += t-tant
             else:
                 timeMemQueue += t-tant
 
-    
-    #print(f'Before job scheduler {jobExecFIFOIndex}')
     # Job scheduler
     if len(jobExecFIFO) > 0 and (flagBusy == False or t % multi == 0): 
         # Index do job a ser executado no próximo turnover
@@ -122,7 +131,7 @@ while(flagOver == False):
                 # Tipo de evento sendo executado no momento
                 curEventType = jobExecFIFO[jobExecFIFOIndex].events[0].eventType
                 if curEventType == "MALLOC":
-                    emptyStart = memory.index(None) # Gambiarra
+                    emptyStart = memory.index(None)
                     for i in range(emptyStart, jobExecFIFO[jobExecFIFOIndex].mem+emptyStart):
                         memory[i] = jobExecFIFO[jobExecFIFOIndex].name  
                 if curEventType == "MFREE":
@@ -134,6 +143,9 @@ while(flagOver == False):
                 else:
                     jobExecFIFO[jobExecFIFOIndex].events[0].iterate()
                     t += 1
+
+                if t != tant and jobExecFIFO[jobExecFIFOIndex].events[0].eventType == "EXEC":
+                    tExec += 1
             else:
                 oldIndex = jobExecFIFOIndex # Gambiarra
                 if jobExecFIFOIndex == len(jobExecFIFO)-1:
@@ -169,4 +181,7 @@ print(memory)
 print('\n----#Métricas#----')
 print(f'Tempo de espera em fila de memória = {timeMemQueue}')
 print(f'Taxa de ocupação de memória = {memUsage}')
+print(f'Taxa de atendimento às solicitações de alocação = {memSucRate}')
+idle = 1-tExec/t
+print(f'Taxa de ociosidade do processador = {idle}')
 print(f'Tempo de execução = {t}')
