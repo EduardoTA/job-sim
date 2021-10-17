@@ -1,5 +1,7 @@
 from event import Event
 from job import Job
+import matplotlib.pyplot as plt
+
 
 # Implementação da Alocação Simples Contígua
 def SCA(jobs, N):
@@ -9,7 +11,7 @@ def SCA(jobs, N):
     flagEndEvent = False # Flag que indica que o evento END foi pushed
     flagBusy = False # Flag verdadeira se o processador está ocupado
 
-    memory = [None]*N # Memória física
+    memory = [0]*N # Memória física
 
     mallocDuration = 0 # Duração do evento de alocação de memória
     inicDuration = 0 # Duração do evento de inicialização de job
@@ -18,7 +20,7 @@ def SCA(jobs, N):
 
     min_job = 0 # Job com menor tempo de inicialização
 
-    curEvent = None # Evento que está atualmente sendo executado
+    curEvent = 0 # Evento que está atualmente sendo executado
     
     # Métricas
     timeMemQueue = 0 # Tempo de espera em fila de espera
@@ -47,13 +49,13 @@ def SCA(jobs, N):
                 # Tipo de evento sendo executado no momento
                 curEventType = jobs[0].events[0].eventType
                 if curEventType == "MALLOC":
-                    emptyStart = memory.index(None)
+                    emptyStart = memory.index(0)
                     for i in range(emptyStart, jobs[0].mem+emptyStart):
-                        memory[i] = jobs[0].name  
+                        memory[i] = jobs[0].index  
                 if curEventType == "MFREE":
-                    emptyStart = memory.index(jobs[0].name)
+                    emptyStart = memory.index(jobs[0].index)
                     for i in range(emptyStart, jobs[0].mem+emptyStart):
-                        memory[i] = None        
+                        memory[i] = 0        
                 if jobs[0].events[0].isOver():
                     jobs[0].events.pop(0)
                 else:
@@ -63,7 +65,6 @@ def SCA(jobs, N):
                 if t != tant and jobs[0].events[0].eventType == "EXEC":
                     tExec += 1
             else:
-                t += 1
                 jobs.pop(0)
         else:
             flagOver = True
@@ -83,3 +84,5 @@ def SCA(jobs, N):
     print(f'Taxa de ociosidade do processador = {idle}')
     print(f'Tempo de execução = {t}')
     print(f'Taxa de multiprogramação = 1')
+
+    plt.imshow(memory)

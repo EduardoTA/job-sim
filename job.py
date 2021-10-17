@@ -6,9 +6,11 @@ class Job:
     duration = 0 # Duração do job
     mem = 0 # Memória alocada para o job
     events = [] # Eventos pendentes relacionados ao job
+    index = 0
 
     # Inicializa o evento
-    def __init__(self, name, initTime, duration, mem):
+    def __init__(self, index, name, initTime, duration, mem):
+        self.index = index
         self.duration = duration
         self.mem = mem
         self.initTime = initTime

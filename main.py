@@ -12,7 +12,7 @@ def getJobMix(file):
     for i in range(nJobs):
         line = (f.readline().split())
         print((line))
-        jobs.append(Job(line[0], int(line[1]), int(line[2]), int(line[3])))
+        jobs.append(Job(i+1, line[0], int(line[1]), int(line[2]), int(line[3])))
 
         jobs.sort(key=lambda x: x.initTime)
     print("\n")
