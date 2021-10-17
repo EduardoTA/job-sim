@@ -12,6 +12,8 @@ def getJobMix():
         line = (f.readline().split())
         print((line))
         jobs.append(Job(line[0], int(line[1]), int(line[2]), int(line[3])))
+
+        jobs.sort(key=lambda x: x.initTime)
     return jobs
 
 # Chamar arquivos com as implementações
@@ -25,6 +27,6 @@ while(True):
     if (selection == "1"):
         SCA(getJobMix())
     if (selection == "2"):
-        SCA(getJobMix()))
+        SPA(getJobMix())
     if (selection == "3"):
         break
