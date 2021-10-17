@@ -69,8 +69,8 @@ def SPA(jobsFIFO, N, multi):
 
     tExec = 0 # Tempo que o processador está em EXEC
 
-    multitask = 0 # Taxa média de multiprogramação atual
-    multitaskant = 0 # Taxa média de multiprogramação anterior
+    multitask = 1 # Taxa média de multiprogramação atual
+    multitaskant = 1 # Taxa média de multiprogramação anterior
 
     # While que itera toda iteração de simulação
     while(flagOver == False):
@@ -103,7 +103,7 @@ def SPA(jobsFIFO, N, multi):
                     timeMemQueue += t-tant
 
         # Cálculo da taxa de multiprogramação (só leva em conta momentos em que existem jobs na memória)
-        if tant != t and len(jobExecFIFO) > 0:
+        if tant < t and len(jobExecFIFO) > 0 and checkAllJobsExec(jobExecFIFO):
             multitaskant = multitask
             multitask = multitaskant + (len(jobExecFIFO) - multitaskant)/t
 
