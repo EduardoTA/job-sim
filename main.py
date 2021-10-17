@@ -1,4 +1,19 @@
 import os
+from SCA import SCA
+from SPA import SPA
+from event import Event
+from job import Job
+
+def getJobMix():
+    jobs = [] # Lista de jobs
+    f = open("jobs.txt", "r")
+    nJobs = int(f.readline())
+    for i in range(nJobs):
+        line = (f.readline().split())
+        print((line))
+        jobs.append(Job(line[0], int(line[1]), int(line[2]), int(line[3])))
+    return jobs
+
 # Chamar arquivos com as implementações
 
 while(True):
@@ -8,8 +23,8 @@ while(True):
     print("3 - Sair") 
     selection = input()
     if (selection == "1"):
-        os.system("SCA.py")
+        SCA(getJobMix())
     if (selection == "2"):
-        os.system("SPA.py")
+        SCA(getJobMix()))
     if (selection == "3"):
         break
