@@ -28,12 +28,11 @@ def SCA(jobs, N):
     memUsage = 0 # Taxa média de ocupação de memória atual
     memUsageant = 0 # Taxa média de ocupação de memória anterior
 
-    memSucRate = 0 # Taxa média de atendimento às solicitações de alocação
-    memSucRateant = 0 # Taxa média de atendimento às solicitações de alocação anterior
+    memSucRate = 1 # Taxa média de atendimento às solicitações de alocação
+    memSucRateant = 1 # Taxa média de atendimento às solicitações de alocação anterior
     nSucRate = 0 # Número de solicitações de alocação de memória
 
     tExec = 0 # Tempo que o processador está em EXEC
-
 
     # Job handler
     for job in jobs:
@@ -68,6 +67,11 @@ def SCA(jobs, N):
                 jobs.pop(0)
         else:
             flagOver = True
+        
+        if tant != t:
+            memUsageant = memUsage
+            memUsage = memUsageant + ((sum(x is not None for x in memory)/len(memory)) - memUsageant)/t
+
     
     print('\njobs[]:')
     for job in jobs:   
