@@ -44,11 +44,11 @@ inicDuration = 0 # Duração do evento de inicialização de job
 mfreeDuration = 0 # Duração do evento de liberação de memória
 jentDuration = 0 # Duração de finalizaçao de job
 
-job1 = Job("Job1", 0, 397, 20) # Job 1
+job1 = Job("Job1", 0, 20, 100) # Job 1
 job1.spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration) # Cria os eventos do job
-job2 = Job("Job2", 10, 73, 5) # Job 2
+job2 = Job("Job2", 30, 20, 5) # Job 2
 job2.spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration) # Cria os eventos do job
-job3 = Job("Job3", 20,  88, 20) # Job 2
+job3 = Job("Job3", 70,  20, 20) # Job 2
 job3.spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration) # Cria os eventos do job
 
 jobsFIFO = [] # Fila de jobs que não estão sendo executados
@@ -93,14 +93,18 @@ while(flagOver == False):
                 else:
                     pass
     
+    #print(f'Before job scheduler {jobExecFIFOIndex}')
     # Job scheduler
     if len(jobExecFIFO) > 0 and (flagBusy == False or t % multi == 0): 
         # Index do job a ser executado no próximo turnover
-        if jobExecFIFOIndex == len(jobExecFIFO)-1:
+        if jobExecFIFOIndex >= len(jobExecFIFO)-1:
             jobExecFIFOIndex = 0
         else:
             jobExecFIFOIndex += 1
-    
+    #print(f'After job scheduler {jobExecFIFOIndex}')
+    #print('\nEm t='+str(t)+': ')
+    #for job in jobExecFIFO:
+    #    print(job)
     # Event handler
     if len(jobExecFIFO) > 0 or len(jobFetchFIFO) > 0 or len(jobsFIFO) > 0:
         if len(jobExecFIFO) > 0:
@@ -127,7 +131,8 @@ while(flagOver == False):
                 else:
                     jobExecFIFOIndex += 1
                 jobExecFIFO.pop(oldIndex)
-                
+        else:
+            t += 1  
     else:
         flagOver = True
 
