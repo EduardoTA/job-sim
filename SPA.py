@@ -32,6 +32,8 @@ def firstFit(size, memory): # Retorna o índice do endereço de memória onde co
 
 # Implementação da Alocação Particionada Simples
 t = 0 # Tempo atual de simulação
+tant = 0 # Tempo de simulação na iteração anterior do while externo
+
 flagOver = False # Flag que indica fim de execução
 flagEndEvent = False # Flag que indica que o evento END foi pushed
 flagBusy = False # Flag verdadeira se o processador está ocupado
@@ -46,7 +48,7 @@ jentDuration = 0 # Duração de finalizaçao de job
 
 job1 = Job("Job1", 0, 20, 100) # Job 1
 job1.spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration) # Cria os eventos do job
-job2 = Job("Job2", 30, 20, 5) # Job 2
+job2 = Job("Job2", 0, 20, 5) # Job 2
 job2.spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration) # Cria os eventos do job
 job3 = Job("Job3", 70,  20, 20) # Job 2
 job3.spawnEvents(inicDuration, mallocDuration, mfreeDuration, jentDuration) # Cria os eventos do job
@@ -70,6 +72,12 @@ jobExecFIFOIndex = 0 # Elemento da fila que está sendo executado no momento
 
 turnoverTime = 20 # Número de ciclos de clock para trocar de job
 
+# Métricas
+timeMemQueue = 0 # Tempo de espera em fila de espera
+
+memUsage = 0 # Taxa média de ocupação de memória atual
+memUsageant = 0 # Taxa média de ocupação de memória anterior
+
 # While que itera toda iteração de simulação
 while(flagOver == False):
     # Job fetcher
@@ -91,7 +99,10 @@ while(flagOver == False):
                     jobExecFIFO.append(jobFetchFIFO[0])
                     jobFetchFIFO.pop(0)
                 else:
-                    pass
+                    timeMemQueue += t-tant
+            else:
+                timeMemQueue += t-tant
+
     
     #print(f'Before job scheduler {jobExecFIFOIndex}')
     # Job scheduler
@@ -101,10 +112,9 @@ while(flagOver == False):
             jobExecFIFOIndex = 0
         else:
             jobExecFIFOIndex += 1
-    #print(f'After job scheduler {jobExecFIFOIndex}')
-    #print('\nEm t='+str(t)+': ')
-    #for job in jobExecFIFO:
-    #    print(job)
+
+    tant = t
+
     # Event handler
     if len(jobExecFIFO) > 0 or len(jobFetchFIFO) > 0 or len(jobsFIFO) > 0:
         if len(jobExecFIFO) > 0:
@@ -135,6 +145,10 @@ while(flagOver == False):
             t += 1  
     else:
         flagOver = True
+    
+    if tant != t:
+        memUsageant = memUsage
+        memUsage = memUsageant + ((sum(x is not None for x in memory)/len(memory)) - memUsageant)/t
 
 
 print('\njobsFIFO[]:')
@@ -152,4 +166,7 @@ for job in jobExecFIFO:
 print('\nMemória:')
 print(memory)
 
-print('Tempo de execução = '+str(t))
+print('\n----#Métricas#----')
+print(f'Tempo de espera em fila de memória = {timeMemQueue}')
+print(f'Taxa de ocupação de memória = {memUsage}')
+print(f'Tempo de execução = {t}')
