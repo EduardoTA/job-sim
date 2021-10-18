@@ -2,14 +2,13 @@ from event import Event
 from job import Job
 from memPlot import memPlot
 
-
 def SPA(jobsInic, N, multi):
     jobsFIFO = jobsInic.copy()
 
     def checkAllJobsExec(jobs):
         flag = True
         for job in jobs:
-            if len(job.events) == 0 or job.events[0].eventType != "EXEC":
+            if len(job.events) == 0 or (job.events[0].eventType != "EXEC" and job.events[0].eventType != "MALLOC"):
                 flag = False
         return flag
 
@@ -59,7 +58,7 @@ def SPA(jobsInic, N, multi):
     jobExecFIFO = [] # Fila com os jobs alocados no momento (sendo executados)
     jobExecFIFOIndex = 0 # Elemento da fila que está sendo executado no momento
 
-    turnoverTime = 20 # Número de ciclos de clock para trocar de job
+    turnoverTime = 1 # Número de ciclos de clock para trocar de job
 
     # Métricas
     timeMemQueue = 0 # Tempo de espera em fila de espera
@@ -80,9 +79,23 @@ def SPA(jobsInic, N, multi):
 
     # While que itera toda iteração de simulação
     while(flagOver == False):
+        print('===================')
+        print(f'\nJob fetcher at t={t}')
+        for job in jobFetchFIFO:
+            print(job)
+        print('\n\n')
+
+        print(f'\nJob Events at t={t}')
+        for job in jobExecFIFO:
+            for event in job.events:
+                print(event)
+        print(jobExecFIFOIndex)
+        print(memory)
+
         # Job fetcher
         if len(jobsFIFO) > 0:
             while(len(jobsFIFO) > 0 and jobsFIFO[0].initTime == t):
+                #jobsFIFO[0].events.pop(0)
                 jobFetchFIFO.append(jobsFIFO[0])
                 jobsFIFO.pop(0)
 
@@ -132,22 +145,29 @@ def SPA(jobsInic, N, multi):
                     if curEventType == "INIC":
                         if jobExecFIFO[jobExecFIFOIndex].start > t:
                             jobExecFIFO[jobExecFIFOIndex].start = t
+                            jobExecFIFO[jobExecFIFOIndex].end = t+jobExecFIFO[jobExecFIFOIndex].duration
 
-                    if curEventType == "MALLOC":
+                    if curEventType == "MALLOC" and not(jobExecFIFO[jobExecFIFOIndex].index in memory):
                         emptyStart = memory.index(0)
-                        for i in range(emptyStart, jobExecFIFO[jobExecFIFOIndex].mem+emptyStart):
+                        for i in range(emptyStart, jobExecFIFO[jobExecFIFOIndex].mem+emptyStart-1):
                             memory[i] = jobExecFIFO[jobExecFIFOIndex].index
 
                     if curEventType == "MFREE":
                         emptyStart = memory.index(jobExecFIFO[jobExecFIFOIndex].index)
-                        for i in range(emptyStart, jobExecFIFO[jobExecFIFOIndex].mem+emptyStart):
+                        for i in range(emptyStart, jobExecFIFO[jobExecFIFOIndex].mem+emptyStart-1):
                             memory[i] = 0 
 
                     if jobExecFIFO[jobExecFIFOIndex].events[0].isOver():
-                        jobExecFIFO[jobExecFIFOIndex].events.pop(0)
+                        if jobExecFIFO[jobExecFIFOIndex].events[0].eventType == "MALLOC":
+                            print(checkAllJobsExec(jobExecFIFO))
+                            if checkAllJobsExec(jobExecFIFO):
+                                jobExecFIFO[jobExecFIFOIndex].events.pop(0)
+                            else:
+                                pass
+                        else:
+                            jobExecFIFO[jobExecFIFOIndex].events.pop(0)
                     else:
                         jobExecFIFO[jobExecFIFOIndex].events[0].iterate()
-                        print(jobExecFIFO)
                         t += 1
 
                     if t != tant and jobExecFIFO[jobExecFIFOIndex].events[0].eventType == "EXEC":
@@ -158,7 +178,6 @@ def SPA(jobsInic, N, multi):
                         jobExecFIFOIndex = 0
                     else:
                         jobExecFIFOIndex += 1
-                    jobExecFIFO[jobExecFIFOIndex].end = t
                     jobExecFIFO.pop(oldIndex)
             else:
                 t += 1  
