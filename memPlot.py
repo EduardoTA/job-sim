@@ -3,7 +3,8 @@ import matplotlib.patches as mpatches
 
 def memPlot(jobs, memoryAcc):
     plt.figure(figsize=(20,10))
-    plt.imshow([list(i) for i in zip(*memoryAcc)], aspect='auto', origin='lower')
+
+    plt.imshow([list(i) for i in zip(*memoryAcc)], aspect='auto', origin='lower', interpolation='none', extent=[0, len(memoryAcc), 0, len(memoryAcc[0])])
     cmap = plt.cm.get_cmap('viridis')
     legends = []
     for job in jobs:

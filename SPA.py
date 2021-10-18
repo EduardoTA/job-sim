@@ -3,7 +3,9 @@ from job import Job
 from memPlot import memPlot
 
 
-def SPA(jobsFIFO, N, multi):
+def SPA(jobsInic, N, multi):
+    jobsFIFO = jobsInic.copy()
+
     def checkAllJobsExec(jobs):
         flag = True
         for job in jobs:
@@ -17,7 +19,7 @@ def SPA(jobsFIFO, N, multi):
         i = 0 # Índice que vai marchando pelo vetor de memória
         flagFoundEmpty = False # Flag que indica que espaço vazio foi encontrado
         while emptyLen < size and i < len(memory):
-            if memory[i] == None:
+            if memory[i] == 0:
                 if flagFoundEmpty == False:
                     flagFoundEmpty = True
                     emptyStart = i
@@ -39,7 +41,7 @@ def SPA(jobsFIFO, N, multi):
 
     flagOver = False # Flag que indica fim de execução
 
-    memory = [None]*N # Memória física
+    memory = [0]*N # Memória física
 
     mallocDuration = 0 # Duração do evento de alocação de memória
     inicDuration = 0 # Duração do evento de inicialização de job
@@ -73,6 +75,8 @@ def SPA(jobsFIFO, N, multi):
 
     multitask = 1 # Taxa média de multiprogramação atual
     multitaskant = 1 # Taxa média de multiprogramação anterior
+
+    memoryAcc = []
 
     # While que itera toda iteração de simulação
     while(flagOver == False):
@@ -110,7 +114,7 @@ def SPA(jobsFIFO, N, multi):
             multitask = multitaskant + (len(jobExecFIFO) - multitaskant)/t
 
         # Job scheduler
-        if len(jobExecFIFO) > 0 and (t % turnoverTime == 0): 
+        if len(jobExecFIFO) > 0 and t % turnoverTime == 0 and 1: 
             # Index do job a ser executado no próximo turnover
             if jobExecFIFOIndex >= len(jobExecFIFO)-1:
                 jobExecFIFOIndex = 0
@@ -125,28 +129,36 @@ def SPA(jobsFIFO, N, multi):
                 if len(jobExecFIFO[jobExecFIFOIndex].events) > 0:
                     # Tipo de evento sendo executado no momento
                     curEventType = jobExecFIFO[jobExecFIFOIndex].events[0].eventType
+                    if curEventType == "INIC":
+                        if jobExecFIFO[jobExecFIFOIndex].start > t:
+                            jobExecFIFO[jobExecFIFOIndex].start = t
+
                     if curEventType == "MALLOC":
-                        emptyStart = memory.index(None)
+                        emptyStart = memory.index(0)
                         for i in range(emptyStart, jobExecFIFO[jobExecFIFOIndex].mem+emptyStart):
-                            memory[i] = jobExecFIFO[jobExecFIFOIndex].name  
+                            memory[i] = jobExecFIFO[jobExecFIFOIndex].index
+
                     if curEventType == "MFREE":
-                        emptyStart = memory.index(jobExecFIFO[jobExecFIFOIndex].name)
+                        emptyStart = memory.index(jobExecFIFO[jobExecFIFOIndex].index)
                         for i in range(emptyStart, jobExecFIFO[jobExecFIFOIndex].mem+emptyStart):
-                            memory[i] = None        
+                            memory[i] = 0 
+
                     if jobExecFIFO[jobExecFIFOIndex].events[0].isOver():
                         jobExecFIFO[jobExecFIFOIndex].events.pop(0)
                     else:
                         jobExecFIFO[jobExecFIFOIndex].events[0].iterate()
+                        print(jobExecFIFO)
                         t += 1
 
                     if t != tant and jobExecFIFO[jobExecFIFOIndex].events[0].eventType == "EXEC":
                         tExec += 1
                 else:
                     oldIndex = jobExecFIFOIndex
-                    if jobExecFIFOIndex == len(jobExecFIFO)-1:
+                    if jobExecFIFOIndex >= len(jobExecFIFO)-2:
                         jobExecFIFOIndex = 0
                     else:
                         jobExecFIFOIndex += 1
+                    jobExecFIFO[jobExecFIFOIndex].end = t
                     jobExecFIFO.pop(oldIndex)
             else:
                 t += 1  
@@ -155,7 +167,9 @@ def SPA(jobsFIFO, N, multi):
         
         if tant != t:
             memUsageant = memUsage
-            memUsage = memUsageant + ((sum(x is not None for x in memory)/len(memory)) - memUsageant)/t
+            memUsage = memUsageant + ((sum(x != 0 for x in memory)/len(memory)) - memUsageant)/t
+
+            memoryAcc = memoryAcc+[memory.copy()]
 
 
     print('\njobsFIFO[]:')
@@ -181,3 +195,5 @@ def SPA(jobsFIFO, N, multi):
     print(f'Taxa de ociosidade do processador = {idle}')
     print(f'Tempo de execução = {t}')
     print(f'Taxa de multiprogramação = {multitask}')
+
+    memPlot(jobsInic, memoryAcc)

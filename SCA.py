@@ -63,7 +63,6 @@ def SCA(jobsInic, N):
                     emptyStart = memory.index(0)
                     for i in range(emptyStart, jobs[0].mem+emptyStart):
                         memory[i] = jobs[0].index
-                    print(memory)
                 if curEventType == "MFREE":
                     emptyStart = memory.index(jobs[0].index)
                     for i in range(emptyStart, jobs[0].mem+emptyStart):
