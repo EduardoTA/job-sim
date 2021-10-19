@@ -27,6 +27,8 @@ class Job:
         self.events.append(event)
         event = Event("MALLOC", mallocDuration, self.mem, self)
         self.events.append(event)
+        event = Event("READY", 0, 0, self)
+        self.events.append(event)
         event = Event("EXEC", self.duration, 0, self)
         self.events.append(event)
         event = Event("MFREE", mfreeDuration, 0, self)

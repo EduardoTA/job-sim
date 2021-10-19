@@ -36,5 +36,7 @@ class Event:
             return False
     
     def __str__(self):
+        return str(f"Job name: {self.job.__str__()} ({self.job.index}), type: {self.eventType}, duration: {self.duration}, elapsed: {self.elapsed}, value: {self.value}")
         return str("Job name: "+self.job.__str__()+", type: "+self.eventType+", duration: "+str(self.duration)+", elapsed: "+str(self.elapsed)+", value: "+str(self.value))
+        
 
